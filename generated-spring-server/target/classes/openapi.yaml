@@ -1,0 +1,1058 @@
+openapi: 3.0.3
+info:
+  description: REST API for an E-Commerce Marketplace Application built with Express
+    and PostgreSQL.
+  title: E-Commerce Marketplace API
+  version: 1.0.0
+servers:
+- description: Local server
+  url: http://localhost:3000
+tags:
+- description: Product endpoints
+  name: Products
+- description: Seller endpoints
+  name: Sellers
+- description: Order endpoints
+  name: Orders
+- description: Category endpoints
+  name: Categories
+paths:
+  /api/v1/products:
+    get:
+      description: "Returns a paginated list of products with filtering, sorting and\
+        \ search options."
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: sortBy
+        required: false
+        schema:
+          enum:
+          - createdAt
+          - price
+          - name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: category
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: sellerId
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: minPrice
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: true
+        in: query
+        name: maxPrice
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: true
+        in: query
+        name: search
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: header
+        name: Accept-Language
+        required: false
+        schema:
+          enum:
+          - en
+          - fr
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+            application/xml:
+              schema:
+                type: string
+          description: Products list
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Invalid query/body
+      summary: Get products list
+      tags:
+      - Products
+      x-accepts:
+      - application/json
+      - application/xml
+      x-tags:
+      - tag: Products
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreateInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: Product created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Invalid body
+      summary: Create a product
+      tags:
+      - Products
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+  /api/v1/products/{id}:
+    delete:
+      parameters:
+      - description: Product id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Product deleted
+        "404":
+          description: Product not found
+      summary: Delete product
+      tags:
+      - Products
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+    get:
+      parameters:
+      - description: Product id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: Product details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Resource not found
+      summary: Get product by id
+      tags:
+      - Products
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+    patch:
+      parameters:
+      - description: Product id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdateInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+          description: Product updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Invalid body/params
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Product not found
+      summary: Update product price and stock
+      tags:
+      - Products
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+  /api/v1/products/{id}/seller:
+    get:
+      parameters:
+      - description: Product id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seller"
+          description: Seller of the product
+      summary: Get seller of a product
+      tags:
+      - Products
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+  /api/v1/products/{id}/category:
+    get:
+      parameters:
+      - description: Product id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+          description: Category of the product
+      summary: Get category of a product
+      tags:
+      - Products
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Products
+  /api/v1/sellers:
+    get:
+      responses:
+        "200":
+          description: Sellers list
+      summary: Get sellers list
+      tags:
+      - Sellers
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SellerCreateInput"
+        required: true
+      responses:
+        "201":
+          description: Seller created
+        "400":
+          description: Invalid body
+      summary: Create seller
+      tags:
+      - Sellers
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+  /api/v1/sellers/{id}:
+    delete:
+      parameters:
+      - description: Seller id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Seller deleted
+      summary: Delete seller
+      tags:
+      - Sellers
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+    get:
+      parameters:
+      - description: Seller id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Seller details
+        "404":
+          description: Seller not found
+      summary: Get seller by id
+      tags:
+      - Sellers
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+    patch:
+      parameters:
+      - description: Seller id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SellerUpdateInput"
+        required: true
+      responses:
+        "200":
+          description: Seller updated
+        "400":
+          description: Invalid body
+        "404":
+          description: Seller not found
+      summary: Update seller except email
+      tags:
+      - Sellers
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+  /api/v1/sellers/{sellerId}/products:
+    get:
+      parameters:
+      - explode: false
+        in: path
+        name: sellerId
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Products of seller
+      summary: Get products of a seller
+      tags:
+      - Sellers
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Sellers
+  /api/v1/orders:
+    get:
+      parameters:
+      - explode: true
+        in: query
+        name: productId
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: customerName
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Orders list
+      summary: Get orders list
+      tags:
+      - Orders
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Orders
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateInput"
+        required: true
+      responses:
+        "201":
+          description: Order created
+        "400":
+          description: Invalid body
+      summary: Create order
+      tags:
+      - Orders
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Orders
+  /api/v1/orders/{id}:
+    delete:
+      parameters:
+      - description: Order id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: Order deleted
+      summary: Delete order
+      tags:
+      - Orders
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Orders
+    get:
+      parameters:
+      - description: Order id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Order details
+        "404":
+          description: Order not found
+      summary: Get order by id
+      tags:
+      - Orders
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Orders
+  /api/v1/orders/{id}/status:
+    patch:
+      parameters:
+      - description: Order id
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdateInput"
+        required: true
+      responses:
+        "200":
+          description: Order status updated
+        "400":
+          description: Invalid body
+      summary: Update order status
+      tags:
+      - Orders
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Orders
+  /api/v1/categories:
+    get:
+      responses:
+        "200":
+          description: Categories list
+      summary: Get categories list
+      tags:
+      - Categories
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Categories
+  /api/v1/categories/{categoryId}/products:
+    get:
+      parameters:
+      - explode: false
+        in: path
+        name: categoryId
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Products of category
+      summary: Get products of a category
+      tags:
+      - Categories
+      x-accepts:
+      - application/json
+      x-tags:
+      - tag: Categories
+components:
+  parameters:
+    ProductId:
+      description: Product id
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    SellerId:
+      description: Seller id
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    OrderId:
+      description: Order id
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+  schemas:
+    ErrorResponse:
+      example:
+        code: BODY_NOT_VALID
+        details: Only price and stock can be updated
+        message: Invalid request body
+      properties:
+        code:
+          example: BODY_NOT_VALID
+          type: string
+        message:
+          example: Invalid request body
+          type: string
+        details:
+          example: Only price and stock can be updated
+          type: string
+      type: object
+    Address:
+      example:
+        country: Morocco
+        zipCode: "20000"
+        city: Casablanca
+        street: Rue 10
+      properties:
+        street:
+          example: Rue 10
+          type: string
+        city:
+          example: Casablanca
+          type: string
+        country:
+          example: Morocco
+          type: string
+        zipCode:
+          example: "20000"
+          type: string
+      required:
+      - city
+      - country
+      - street
+      - zipCode
+      type: object
+    SellerPreview:
+      example:
+        rating: 4.7
+        storeName: Tech Store
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        storeName:
+          example: Tech Store
+          type: string
+        rating:
+          example: 4.7
+          type: number
+      type: object
+    Seller:
+      example:
+        createdAt: "Tuesday, April 7, 2026 at 4:35:48 PM UTC"
+        address:
+          country: Morocco
+          zipCode: "20000"
+          city: Casablanca
+          street: Rue 10
+        phone: "+212600000000"
+        rating: 4.7
+        storeName: Tech Store
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        email: techstore@example.com
+      properties:
+        id:
+          format: uuid
+          type: string
+        storeName:
+          example: Tech Store
+          type: string
+        email:
+          example: techstore@example.com
+          type: string
+        phone:
+          example: "+212600000000"
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        rating:
+          example: 4.7
+          type: number
+        createdAt:
+          example: "Tuesday, April 7, 2026 at 4:35:48 PM UTC"
+          type: string
+      type: object
+    Category:
+      example:
+        name: electronics
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        name:
+          example: electronics
+          type: string
+      type: object
+    ProductPreview:
+      example:
+        createdAt: mardi 7 avril 2026 à 16:35:48 UTC
+        thumbnail: https://example.com/mouse.jpg
+        price: 1700
+        name: Mouse X
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        category: electronics
+      properties:
+        id:
+          format: uuid
+          type: string
+        name:
+          example: Mouse X
+          type: string
+        price:
+          example: 1700
+          type: number
+        thumbnail:
+          example: https://example.com/mouse.jpg
+          type: string
+        category:
+          example: electronics
+          type: string
+        createdAt:
+          example: mardi 7 avril 2026 à 16:35:48 UTC
+          type: string
+      type: object
+    Product:
+      example:
+        seller:
+          rating: 4.7
+          storeName: Tech Store
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        createdAt: createdAt
+        images:
+        - images
+        - images
+        _links:
+          key: ""
+        price: 1700
+        name: Mouse X
+        description: Wireless mouse for office and gaming
+        currency: USD
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        stock: 7
+        category:
+          name: electronics
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        name:
+          example: Mouse X
+          type: string
+        description:
+          example: Wireless mouse for office and gaming
+          type: string
+        price:
+          example: 1700
+          type: number
+        currency:
+          example: USD
+          type: string
+        stock:
+          example: 7
+          type: integer
+        images:
+          items:
+            type: string
+          type: array
+        category:
+          $ref: "#/components/schemas/Category"
+        createdAt:
+          type: string
+        seller:
+          $ref: "#/components/schemas/SellerPreview"
+        _links:
+          additionalProperties: true
+          type: object
+      type: object
+    ProductCreateInput:
+      example:
+        thumbnail: https://example.com/mouse.jpg
+        sellerId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        price: 0.09008281904610115
+        name: name
+        description: description
+        currency: USD
+        stock: 0
+        categoryId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        name:
+          maxLength: 100
+          minLength: 3
+          type: string
+        description:
+          maxLength: 2000
+          minLength: 10
+          type: string
+        price:
+          minimum: 0.01
+          type: number
+        currency:
+          example: USD
+          maxLength: 3
+          minLength: 3
+          type: string
+        stock:
+          minimum: 0
+          type: integer
+        thumbnail:
+          example: https://example.com/mouse.jpg
+          type: string
+        categoryId:
+          format: uuid
+          type: string
+        sellerId:
+          format: uuid
+          type: string
+      required:
+      - categoryId
+      - currency
+      - description
+      - name
+      - price
+      - sellerId
+      - stock
+      type: object
+    ProductUpdateInput:
+      example:
+        price: 0.09008281904610115
+        stock: 0
+      properties:
+        price:
+          minimum: 0.01
+          type: number
+        stock:
+          minimum: 0
+          type: integer
+      type: object
+    SellerCreateInput:
+      example:
+        address:
+          country: Morocco
+          zipCode: "20000"
+          city: Casablanca
+          street: Rue 10
+        phone: "+212611111111"
+        rating: 4.3
+        storeName: Book World
+        email: bookworld@example.com
+      properties:
+        storeName:
+          example: Book World
+          type: string
+        email:
+          example: bookworld@example.com
+          type: string
+        phone:
+          example: "+212611111111"
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        rating:
+          example: 4.3
+          type: number
+      required:
+      - address
+      - email
+      - phone
+      - storeName
+      type: object
+    SellerUpdateInput:
+      example:
+        address:
+          country: country
+          zipCode: zipCode
+          city: city
+          street: street
+        phone: phone
+        rating: 0.40041409523050575
+        storeName: storeName
+      properties:
+        storeName:
+          type: string
+        phone:
+          type: string
+        address:
+          $ref: "#/components/schemas/SellerUpdateInput_address"
+        rating:
+          maximum: 5
+          minimum: 0
+          type: number
+      type: object
+    OrderCreateInput:
+      example:
+        totalAmount: 1500
+        shippingAddress:
+          country: Morocco
+          zipCode: "20000"
+          city: Casablanca
+          street: Rue 10
+        customerName: Amine
+        products:
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        customerName:
+          example: Amine
+          type: string
+        products:
+          items:
+            format: uuid
+            type: string
+          type: array
+        totalAmount:
+          example: 1500
+          type: number
+        shippingAddress:
+          $ref: "#/components/schemas/Address"
+      required:
+      - customerName
+      - products
+      - shippingAddress
+      - totalAmount
+      type: object
+    OrderStatusUpdateInput:
+      example:
+        status: pending
+      properties:
+        status:
+          enum:
+          - pending
+          - paid
+          - shipped
+          - delivered
+          type: string
+      required:
+      - status
+      type: object
+    Order:
+      properties:
+        id:
+          format: uuid
+          type: string
+        customerName:
+          example: Amine
+          type: string
+        products:
+          items:
+            $ref: "#/components/schemas/ProductPreview"
+          type: array
+        totalAmount:
+          example: 1500
+          type: number
+        status:
+          enum:
+          - pending
+          - paid
+          - shipped
+          - delivered
+          type: string
+        createdAt:
+          type: string
+        _links:
+          additionalProperties: true
+          type: object
+      type: object
+    ProductListResponse:
+      example:
+        total: 2
+        data:
+        - createdAt: mardi 7 avril 2026 à 16:35:48 UTC
+          thumbnail: https://example.com/mouse.jpg
+          price: 1700
+          name: Mouse X
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          category: electronics
+        - createdAt: mardi 7 avril 2026 à 16:35:48 UTC
+          thumbnail: https://example.com/mouse.jpg
+          price: 1700
+          name: Mouse X
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          category: electronics
+        _links:
+          key: ""
+        limit: 10
+        page: 1
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/ProductPreview"
+          type: array
+        total:
+          example: 2
+          type: integer
+        page:
+          example: 1
+          type: integer
+        limit:
+          example: 10
+          type: integer
+        _links:
+          additionalProperties: true
+          type: object
+      type: object
+    SellerUpdateInput_address:
+      example:
+        country: country
+        zipCode: zipCode
+        city: city
+        street: street
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        zipCode:
+          type: string
+      type: object
