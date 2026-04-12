@@ -2,6 +2,7 @@ const sellerService = require('../services/seller.service');
 const AppError = require('../utils/appError');
 const { formatDatesInObject } = require('../utils/dateFormatter');
 const { enrichSeller } = require('../utils/hateoas');
+const { sendFormattedResponse } = require('../utils/formatResponse');
 
 async function getAllSellers(req, res, next) {
   try {
